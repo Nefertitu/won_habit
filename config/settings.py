@@ -4,9 +4,12 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+load_dotenv(override=True)
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = ""
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True if os.getenv("DEBUG") == "True" else False
 
@@ -35,6 +38,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "drf_yasg",
     "django_celery_beat",
+    "users",
+    "habits",
 ]
 
 MIDDLEWARE = [
@@ -126,7 +131,12 @@ if CACHE_ENABLED:
         }
     }
 
-# AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "users.User"
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
 
 
 CELERY_TIMEZONE = TIME_ZONE
