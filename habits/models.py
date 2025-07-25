@@ -7,10 +7,20 @@ class Habit(models.Model):
     """Модель Привычка"""
 
     DAILY = "Ежедневно"
+    EVERY_2_DAYS = "Каждые 2 дня"
+    EVERY_3_DAYS = "Каждые 3 дня"
+    EVERY_4_DAYS = "Каждые 4 дня"
+    EVERY_5_DAYS = "Каждые 5 дней"
+    EVERY_6_DAYS = "Каждые 6 дней"
     WEEKLY = "Еженедельно"
 
     FREQUENCY_CHOICES = [
         (DAILY, "Ежедневно"),
+        (EVERY_2_DAYS, "Каждые 2 дня"),
+        (EVERY_3_DAYS, "Каждые 3 дня"),
+        (EVERY_4_DAYS, "Каждые 4 дня"),
+        (EVERY_5_DAYS, "Каждые 5 дней"),
+        (EVERY_6_DAYS, "Каждые 6 дней"),
         (WEEKLY, "Еженедельно"),
     ]
 
