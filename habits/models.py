@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from config import settings
@@ -65,12 +66,10 @@ class Habit(models.Model):
         limit_choices_to={"is_pleasant": True},
         verbose_name="Привычка-вознаграждение",
     )
-    frequency = models.CharField(
-        max_length=20,
-        choices=FREQUENCY_CHOICES,
-        verbose_name="Периодичность",
-        help_text="Установите периодичность выполнения",
-        default=DAILY,
+    frequency_days = models.PositiveSmallIntegerField(
+        verbose_name="Периодичность в днях в неделю",
+        help_text="Интервал выполнения (1-7 дней)",
+        default=1,
     )
     reward = models.CharField(
         max_length=200,
@@ -89,15 +88,29 @@ class Habit(models.Model):
         verbose_name="Публичная привычка",
         help_text="Активировать, если привычку можно публиковать в общий доступ",
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата создания привычки",
+    )
+    updated_at = models.DateTimeField(
+        verbose_name="Дата и время обновления привычки",
+        auto_now=True,
+    )
 
     def __str__(self) -> str:
         """Строковое отображение модели Привычка"""
         if self.is_pleasant:
-            return f"Приятная привычка {self.reward_habit}"
-        return f"Полезная привычка {self.action}"
+            return f"Приятная привычка: Я буду {self.action}"
+        return f"Полезная привычка: Я буду {self.action} в {self.time} {self.location}"
 
     class Meta:
         verbose_name = "Привычка"
         verbose_name_plural = "Привычки"
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(frequency_days__gte=1) & models.Q(frequency_days__lte=7),
+                name="check_frequency_range"
+            )
+        ]
 
 

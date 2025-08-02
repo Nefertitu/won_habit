@@ -1,7 +1,7 @@
 from typing import Union, Sequence, Any
 
 from django.db.models import QuerySet
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated, BasePermission, OperandHolder, SingleOperandHolder
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -10,6 +10,8 @@ from rest_framework.serializers import BaseSerializer
 from habits.models import Habit
 from habits.paginators import HabitsPaginator
 from habits.serializers import HabitSerializer
+from habits.services import setup_habit_reminder
+from habits.tasks import send_information, send_reminder
 from users.permissions import IsOwnerOnly
 
 
@@ -48,9 +50,25 @@ class HabitViewSet(viewsets.ModelViewSet):
             self.permission_classes = [IsAuthenticated, IsOwnerOnly]
         return super().get_permissions()
 
+
     def perform_create(self, serializer: BaseSerializer[Any]) -> None:
-        """Создает новый объект (Habit) и автоматически назначает поле пользователь"""
-        serializer.save(user=self.request.user)
+        """Создает объект 'Habit' и автоматически назначает пользователя"""
+
+        habit = serializer.save(user=self.request.user)
+        print(f"Создана привычка: {habit}")
+        print(f"Время для выполнения: {habit.time}, {type(habit.time)}")
+
+        if self.request.user.email:
+            send_information.delay(self.request.user.email)
+        else:
+            print("У пользователя нет email, уведомление не отправлено")
+
+        if habit.time and habit.frequency_days:
+            try:
+                setup_habit_reminder(habit)
+                print(f"Напоминание для привычки {habit.pk} настроено")
+            except Exception as e:
+                print(f"Ошибка настройки напоминания: {e}")
 
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Обновление привычки"""
@@ -76,6 +94,8 @@ class HabitViewSet(viewsets.ModelViewSet):
         #     instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
+
+
 
 class PublicHabitListAPIView(generics.ListAPIView):
     """Представление для списка публичных привычек"""

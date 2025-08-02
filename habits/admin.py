@@ -12,8 +12,8 @@ class HabitAdmin(admin.ModelAdmin):
     "id",
     "user",
     "action",
-    "reward_habit",
-    "frequency"
+    "is_pleasant",
+    "frequency_days",
     )
 
     list_filter = ("id",)

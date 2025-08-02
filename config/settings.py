@@ -140,8 +140,34 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 
+# CELERY_BEAT_SCHEDULE = {
+#     "send_reminder": {
+#         "task": "habits.tasks.send_reminder",
+#         "schedule": timedelta(minutes=1),  # timedelta(days=1)
+#     },
+# }
 
-CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_ANNOTATIONS = {
+    'habits.tasks.send_reminder': {
+        'default_retry_delay': 300,
+        'max_retries': 2
+    }
+}
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CELERY_TASK_QUEUES = {
+    'celery': {
+        'exchange': 'celery',
+        'routing_key': 'celery',
+    },
+}
+
+CELERY_TASK_DEFAULT_QUEUE = 'celery'
+CELERY_TASK_CREATE_MISSING_QUEUES = True
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+CELERY_TIMEZONE = "UTC"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
@@ -154,11 +180,11 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-CELERY_BROKER_URL = "redis://localhost:6379/1"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+CELERY_BROKER_URL = os.getenv("LOCATION")
+CELERY_RESULT_BACKEND = os.getenv("LOCATION")
 
 CORS_ALLOWED_ORIGINS = [
-    "*",
+    "http://localhost:8000",
     "http://localhost:8000",
 ]
 
@@ -166,4 +192,10 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+TELEGRAM_URL = "https://api.telegram.org/bot"
+
+# TELEGRAM_BOT_NAME = "OlgaHabbitBot"
