@@ -140,12 +140,6 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 
-# CELERY_BEAT_SCHEDULE = {
-#     "send_reminder": {
-#         "task": "habits.tasks.send_reminder",
-#         "schedule": timedelta(minutes=1),  # timedelta(days=1)
-#     },
-# }
 
 CELERY_TASK_ANNOTATIONS = {"habits.tasks.send_reminder": {"default_retry_delay": 300, "max_retries": 2}}
 
@@ -193,4 +187,3 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 TELEGRAM_URL = "https://api.telegram.org/bot"
 
-# TELEGRAM_BOT_NAME = "OlgaHabbitBot"
