@@ -7,7 +7,7 @@ from rest_framework.serializers import BaseSerializer
 
 from users.models import User
 from users.permissions import IsOwnerOnly
-from users.serializers import UserProfileSerializer, PublicUserSerializer
+from users.serializers import PublicUserSerializer, UserProfileSerializer
 
 
 class UserCreateApiView(CreateAPIView):
@@ -68,4 +68,3 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         elif self.action in ["update", "partial_update"]:
             return [IsOwnerOnly()]
         return [permissions.IsAuthenticated()]
-

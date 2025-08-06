@@ -3,11 +3,9 @@ from datetime import datetime, timedelta
 
 import requests
 from django.utils import timezone
-
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
 
 from config import settings
-
 
 
 def setup_habit_reminder(habit):
@@ -50,12 +48,11 @@ def setup_habit_reminder(habit):
         task = PeriodicTask.objects.create(
             interval=schedule,
             name=task_name,
-            task=f"habits.tasks.send_reminder",
+            task="habits.tasks.send_reminder",
             args=json.dumps([habit.id]),
             start_time=reminder_time,
             description=f"Reminder for {habit.action}",
             enabled=True,
-
         )
         print(f"Напоминание настроено: {task}")
     except Exception as e:

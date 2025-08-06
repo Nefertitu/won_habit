@@ -1,5 +1,5 @@
 import json
-from datetime import timedelta, time, datetime
+from datetime import datetime, time, timedelta
 from io import StringIO
 from unittest.mock import patch
 
@@ -13,7 +13,7 @@ from rest_framework.test import APITestCase
 
 from config import settings
 from habits.models import Habit
-from habits.services import setup_habit_reminder, send_telegram_message
+from habits.services import send_telegram_message, setup_habit_reminder
 from habits.tasks import send_information, send_reminder
 from users.models import User
 
@@ -32,7 +32,7 @@ class HabitTestCase(APITestCase):
             frequency_days=1,
             lead_time=timedelta(minutes=2),
             time=time(18, 10),
-            reward_habit=self.reward_habit
+            reward_habit=self.reward_habit,
         )
         self.client.force_authenticate(user=self.user)
 
@@ -49,7 +49,6 @@ class HabitTestCase(APITestCase):
         self.assertEqual(False, self.habit.is_pleasant)
         self.assertEqual(data.get("reward_habit"), self.habit.reward_habit.pk)
 
-
     def test_habit_create(self) -> None:
         """Тест создания новой привычки"""
 
@@ -61,13 +60,12 @@ class HabitTestCase(APITestCase):
             "frequency_days": 1,
             "lead_time": "00:01:50",
             "time": "13:00:00",
-            "is_pleasant": False
+            "is_pleasant": False,
         }
         response = self.client.post(url, data, format="json")
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Habit.objects.all().count(), 3)
-
 
     def test_habit_update(self) -> None:
         """Тест обновления деталей привычки"""
@@ -189,7 +187,7 @@ class HabitTestCase(APITestCase):
     @parameterized.expand(
         [
             (timedelta(minutes=12), "'lead_time': Время выполнения не должно превышать 2 минуты!"),
-            ("", "'lead_time': Время выполнения не должно быть нулевое или отрицательное!")
+            ("", "'lead_time': Время выполнения не должно быть нулевое или отрицательное!"),
         ]
     )
     def test_habit_create_invalid_lead_time_validators(self, invalid_value, expected_error) -> None:
@@ -209,7 +207,6 @@ class HabitTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("non_field_errors", response.data)
         self.assertEqual(response.data["non_field_errors"][0], expected_error)
-
 
     @parameterized.expand(
         [
@@ -232,7 +229,7 @@ class HabitTestCase(APITestCase):
     @parameterized.expand(
         [
             (timedelta(minutes=12), "'lead_time': Время выполнения не должно превышать 2 минуты!"),
-            ("", "'lead_time': Время выполнения не должно быть нулевое или отрицательное!")
+            ("", "'lead_time': Время выполнения не должно быть нулевое или отрицательное!"),
         ]
     )
     def test_habit_update_invalid_lead_time_validators(self, invalid_value, expected_error) -> None:
@@ -270,7 +267,6 @@ class HabitTestCase(APITestCase):
         self.assertIn("time", response.data)
         self.assertEqual(response.data["time"][0], expected_error)
 
-
     def test_habit_create_not_field_action(self) -> None:
         """Тест обновления привычки с невалидным полем 'lead_time'(проверка в сериализаторе)"""
 
@@ -280,7 +276,7 @@ class HabitTestCase(APITestCase):
             "reward_habit": self.reward_habit.pk,
             "frequency_days": 1,
             "time": time(12, 0),
-            "lead_time": timedelta(minutes=2)
+            "lead_time": timedelta(minutes=2),
         }
         response = self.client.post(url, invalid_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -297,12 +293,13 @@ class HabitTestCase(APITestCase):
             "reward_habit": self.reward_habit.pk,
             "frequency_days": 1,
             "time": time(12, 0),
-            "lead_time": timedelta(minutes=2)
+            "lead_time": timedelta(minutes=2),
         }
         response = self.client.post(url, invalid_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("action", response.data)
         self.assertEqual(response.data["action"][0], "Данное поле не может иметь значение null!")
+
 
 class HabitReminderTest(APITestCase):
     """Тест кейс для проверки установки расписания напоминаний"""
@@ -325,23 +322,21 @@ class HabitReminderTest(APITestCase):
         PeriodicTask.objects.filter(name__contains=f"Habit-{self.habit.pk}").delete()
 
     def test_reminder_creation(self):
-       """Тест создания расписания для привычки"""
+        """Тест создания расписания для привычки"""
 
-       setup_habit_reminder(self.habit)
+        setup_habit_reminder(self.habit)
 
-       task = PeriodicTask.objects.filter(
-           name=f"Habit Reminder {self.habit.pk} - {self.habit.action[:50]}"
-           ).first()
+        task = PeriodicTask.objects.filter(name=f"Habit Reminder {self.habit.pk} - {self.habit.action[:50]}").first()
 
-       self.assertTrue(task, "Периодическая задача не была создана")
-       self.assertEqual(task.task, "habits.tasks.send_reminder")
-       self.assertEqual(task.name, f"Habit Reminder {self.habit.pk} - {self.habit.action[:50]}")
+        self.assertTrue(task, "Периодическая задача не была создана")
+        self.assertEqual(task.task, "habits.tasks.send_reminder")
+        self.assertEqual(task.name, f"Habit Reminder {self.habit.pk} - {self.habit.action[:50]}")
 
 
 class TelegramMessageTest(APITestCase):
     """Тест кейс для проверки отправки сообщения пользователю в телеграм-чат"""
 
-    @patch('requests.get')
+    @patch("requests.get")
     def test_send_message_success(self, mock_get):
         """Тест отправки сообщения в телеграм-чат"""
 
@@ -365,7 +360,7 @@ class TelegramMessageTest(APITestCase):
     def test_send_message_output(self):
         """Тест с перехватом вывода в консоль"""
 
-        with patch('sys.stdout', new_callable=StringIO) as fake_out:
+        with patch("sys.stdout", new_callable=StringIO) as fake_out:
             send_telegram_message("123456789", "Test message")
             output = fake_out.getvalue()
 
@@ -378,17 +373,14 @@ class SendInformationTaskTest(APITestCase):
     def setUp(self):
         """Инициализация тестовых данных"""
 
-        self.user = User.objects.create(
-            email="test@example.com",
-            tg_chat_id="123456789"
-        )
+        self.user = User.objects.create(email="test@example.com", tg_chat_id="123456789")
         self.habit = Habit.objects.create(
             user=self.user,
             action="Test habit",
             frequency_days=1,
             lead_time=timedelta(minutes=2),
             time=time(18, 10),
-            )
+        )
         self.client.force_authenticate(user=self.user)
 
     @patch("habits.tasks.send_telegram_message")
@@ -399,8 +391,7 @@ class SendInformationTaskTest(APITestCase):
         send_information(self.user.email)
 
         mock_send_telegram.assert_called_once_with(
-            self.user.tg_chat_id,
-            f"Вы создали привычку: {self.habit.pk} - {self.habit.action}"
+            self.user.tg_chat_id, f"Вы создали привычку: {self.habit.pk} - {self.habit.action}"
         )
         mock_send_mail.assert_called_once()
 
@@ -410,9 +401,7 @@ class SendInformationTaskTest(APITestCase):
 
         with patch("builtins.print") as mock_print:
             send_information("nonexistent@example.com")
-            mock_print.assert_called_with(
-                "Пользователь с email 'nonexistent@example.com' не найден"
-            )
+            mock_print.assert_called_with("Пользователь с email 'nonexistent@example.com' не найден")
 
         mock_send_telegram.assert_not_called()
 
@@ -423,17 +412,14 @@ class SendReminderTaskTest(APITestCase):
     def setUp(self):
         """Инициализация тестовых данных"""
 
-        self.user = User.objects.create(
-            email="test@example.com",
-            tg_chat_id="123456789"
-        )
+        self.user = User.objects.create(email="test@example.com", tg_chat_id="123456789")
         self.habit = Habit.objects.create(
             user=self.user,
             action="Test habit",
             frequency_days=1,
             lead_time=timedelta(minutes=2),
             time=time(12, 0),
-            )
+        )
         self.client.force_authenticate(user=self.user)
         self.now = timezone.localtime()
 
@@ -441,17 +427,13 @@ class SendReminderTaskTest(APITestCase):
         """Очистка данных в кэше"""
         cache.clear()
 
-    @patch('habits.tasks.timezone.localtime')
-    @patch('habits.tasks.send_telegram_message')
-    @patch('habits.tasks.send_reminder.update_state')
+    @patch("habits.tasks.timezone.localtime")
+    @patch("habits.tasks.send_telegram_message")
+    @patch("habits.tasks.send_reminder.update_state")
     def test_reminder_at_correct_time(self, mock_update, mock_send_telegram, mock_localtime):
         """Тест отправки в правильное время"""
 
-        mock_now = datetime.combine(
-            self.now.date(),
-            time(11, 59)).replace(
-            tzinfo=timezone.get_current_timezone()
-        )
+        mock_now = datetime.combine(self.now.date(), time(11, 59)).replace(tzinfo=timezone.get_current_timezone())
 
         mock_localtime.return_value = mock_now
         mock_send_telegram.return_value = True
@@ -459,14 +441,11 @@ class SendReminderTaskTest(APITestCase):
         result = send_reminder(habit_id=self.habit.pk)
 
         mock_send_telegram.assert_called_once_with(
-            "123456789",
-            "Напоминание о привычке!\nДействие: Test habit\nВремя выполнения: 12:00\nМесто: не указано"
+            "123456789", "Напоминание о привычке!\nДействие: Test habit\nВремя выполнения: 12:00\nМесто: не указано"
         )
 
         mock_update.assert_called_once_with(
-            state="PROGRESS",
-            meta={"current": self.habit.pk, "status": "telegram sent"}
+            state="PROGRESS", meta={"current": self.habit.pk, "status": "telegram sent"}
         )
 
         self.assertIn("Успешно отправлено", result)
-

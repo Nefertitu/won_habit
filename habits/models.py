@@ -1,4 +1,4 @@
-from datetime import timedelta, time
+from datetime import time, timedelta
 
 from django.db import models
 
@@ -95,60 +95,48 @@ class Habit(models.Model):
         verbose_name_plural = "Привычки"
         constraints = [
             models.CheckConstraint(
-                check=models.Q(frequency_days__gte=1) &
-                      models.Q(frequency_days__lte=7),
+                check=models.Q(frequency_days__gte=1) & models.Q(frequency_days__lte=7),
                 name="check_frequency_range",
-                violation_error_message="Периодичность может быть от 1 до 7 дней в неделю!"
+                violation_error_message="Периодичность может быть от 1 до 7 дней в неделю!",
             ),
             models.CheckConstraint(
-                check=models.Q(is_pleasant=True) |
-                models.Q(frequency_days__isnull=False),
+                check=models.Q(is_pleasant=True) | models.Q(frequency_days__isnull=False),
                 name="frequency_required_for_useful",
-                violation_error_message="Для полезной привычки поле 'Периодичность' обязательно для заполнения!"
+                violation_error_message="Для полезной привычки поле 'Периодичность' обязательно для заполнения!",
             ),
             models.CheckConstraint(
-                check=models.Q(lead_time__isnull=True) |
-                      models.Q(lead_time__lte=timedelta(minutes=2)),
+                check=models.Q(lead_time__isnull=True) | models.Q(lead_time__lte=timedelta(minutes=2)),
                 name="max_lead_time_2min",
-                violation_error_message="Время выполнения не должно превышать 2 минуты!"
+                violation_error_message="Время выполнения не должно превышать 2 минуты!",
             ),
             models.CheckConstraint(
-                check=models.Q(is_pleasant=True) |
-                models.Q(lead_time__isnull=False),
+                check=models.Q(is_pleasant=True) | models.Q(lead_time__isnull=False),
                 name="lead_time_required_for_useful",
-                violation_error_message="Для полезной привычки поле 'Время на выполнение' обязательно для заполнения"
+                violation_error_message="Для полезной привычки поле 'Время на выполнение' обязательно для заполнения",
             ),
             models.CheckConstraint(
-                check=models.Q(is_pleasant=False) |
-                      models.Q(is_pleasant=True) &
-                      models.Q(reward_habit__isnull=True),
+                check=models.Q(is_pleasant=False) | models.Q(is_pleasant=True) & models.Q(reward_habit__isnull=True),
                 name="pleasant_habit_no_reward_habit",
-                violation_error_message="У приятной привычки не может быть связанной привычки"
+                violation_error_message="У приятной привычки не может быть связанной привычки",
             ),
             models.CheckConstraint(
-                check=models.Q(is_pleasant=False) |
-                      models.Q(is_pleasant=True) &
-                      models.Q(reward__isnull=True),
+                check=models.Q(is_pleasant=False) | models.Q(is_pleasant=True) & models.Q(reward__isnull=True),
                 name="pleasant_habit_no_reward",
-                violation_error_message="У приятной привычки не может быть вознаграждения"
+                violation_error_message="У приятной привычки не может быть вознаграждения",
             ),
             models.CheckConstraint(
-                check=models.Q(is_pleasant=True) |
-                      (models.Q(is_pleasant=False) &
-                      models.Q(reward_habit__isnull=False) &
-                      models.Q(reward__isnull=True) |
-                      models.Q(reward_habit__isnull=True) &
-                      models.Q(reward__isnull=False) |
-                      models.Q(reward__isnull=True) &
-                      models.Q(reward_habit__isnull=True)
-                       ),
+                check=models.Q(is_pleasant=True)
+                | (
+                    models.Q(is_pleasant=False) & models.Q(reward_habit__isnull=False) & models.Q(reward__isnull=True)
+                    | models.Q(reward_habit__isnull=True) & models.Q(reward__isnull=False)
+                    | models.Q(reward__isnull=True) & models.Q(reward_habit__isnull=True)
+                ),
                 name="useful_habit_reward_logic",
-                violation_error_message="У полезной привычки может быть либо связанная приятная привычка, либо вознаграждение!"
+                violation_error_message="У полезной привычки может быть либо связанная приятная привычка, либо вознаграждение!",
             ),
             models.CheckConstraint(
-                check=models.Q(is_pleasant=True) |
-                models.Q(time__isnull=False),
+                check=models.Q(is_pleasant=True) | models.Q(time__isnull=False),
                 name="time_required_for_useful",
-                violation_error_message="Для полезной привычки поле 'Время' обязательно для заполнения"
+                violation_error_message="Для полезной привычки поле 'Время' обязательно для заполнения",
             ),
         ]

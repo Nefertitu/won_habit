@@ -9,12 +9,12 @@ class HabitAdmin(admin.ModelAdmin):
     привычками, с возможностью фильтрации и поиска."""
 
     list_display = (
-    "id",
-    "user",
-    "action",
-    "is_pleasant",
-    "frequency_days",
+        "id",
+        "user",
+        "action",
+        "is_pleasant",
+        "frequency_days",
     )
 
     list_filter = ("id",)
-    search_fields = ("action","reward_habit")
+    search_fields = ("action", "reward_habit")

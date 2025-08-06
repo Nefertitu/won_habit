@@ -19,7 +19,7 @@ def send_information(email):
     try:
         user = User.objects.get(email=email)
 
-        latest_habit = Habit.objects.filter(user=user).order_by('-created_at').first()
+        latest_habit = Habit.objects.filter(user=user).order_by("-created_at").first()
         print(f"Последняя привычка: {latest_habit}")
 
         if not latest_habit:
@@ -32,16 +32,20 @@ def send_information(email):
             print(f"Телеграм-чат id: {user.tg_chat_id}")
 
             send_telegram_message(user.tg_chat_id, message)
-            print(f"Создана привычка: {latest_habit.action}, отправлено сообщение в Телеграм пользователю {latest_habit.user.tg_chat_id}")
+            print(
+                f"Создана привычка: {latest_habit.action}, отправлено сообщение в Телеграм пользователю {latest_habit.user.tg_chat_id}"
+            )
             if user.email:
                 send_mail(
-                    f"Информация о создании привычки",
-                    f"Создана привычка - {latest_habit}",
-                    os.getenv("EMAIL_HOST_USER"),
-                    [user.email],
+                    subject="Информация о создании привычки",
+                    message=f"Создана привычка - {latest_habit}",
+                    from_email=os.getenv("EMAIL_HOST_USER"),
+                    recipient_list=[user.email],
                     fail_silently=False,
                 )
-                print(f"Создана привычка: {latest_habit.action}, отправлено на почту сообщение пользователю {latest_habit.user.email}")
+                print(
+                    f"Создана привычка: {latest_habit.action}, отправлено на почту сообщение пользователю {latest_habit.user.email}"
+                )
     except User.DoesNotExist:
         print(f"Пользователь с email '{email}' не найден")
     except Exception as e:
@@ -65,10 +69,7 @@ def send_reminder(self, habit_id=None):
             habits = Habit.objects.filter(id=habit_id, is_pleasant=False, time__isnull=False)
         else:
             # Иначе выбираем все подходящие привычки
-            habits = Habit.objects.filter(
-                is_pleasant=False,
-                time__isnull=False
-            ).select_related('user')
+            habits = Habit.objects.filter(is_pleasant=False, time__isnull=False).select_related("user")
 
         if not habits.exists():
             print("Нет привычек для напоминания")
@@ -82,8 +83,7 @@ def send_reminder(self, habit_id=None):
             print(f"TG Chat ID: {habit.user.tg_chat_id}")
             print(f"Telegram Bot Token: {settings.TELEGRAM_BOT_TOKEN[:5]}...")
             try:
-                habit_time = timezone.make_aware(
-                    datetime.combine(now.date(), habit.time))
+                habit_time = timezone.make_aware(datetime.combine(now.date(), habit.time))
 
                 # Проверяем разницу во времени (в минутах)
                 time_diff = (habit_time - now).total_seconds() / 60
@@ -102,10 +102,8 @@ def send_reminder(self, habit_id=None):
 
                     if habit.user.tg_chat_id:
                         send_telegram_message(habit.user.tg_chat_id, message)
-                        self.update_state(state='PROGRESS',
-                                          meta={'current': habit.pk, 'status': 'telegram sent'})
-                        print(
-                            f"Отправлено сообщение в Телеграм пользователю {habit.user.tg_chat_id}")
+                        self.update_state(state="PROGRESS", meta={"current": habit.pk, "status": "telegram sent"})
+                        print(f"Отправлено сообщение в Телеграм пользователю {habit.user.tg_chat_id}")
                         success_count_tg += 1
 
                     # if habit.user.email:

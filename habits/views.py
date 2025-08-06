@@ -1,8 +1,8 @@
-from typing import Union, Sequence, Any
+from typing import Any, Sequence, Union
 
 from django.db.models import QuerySet
-from rest_framework import viewsets, generics
-from rest_framework.permissions import IsAuthenticated, BasePermission, OperandHolder, SingleOperandHolder
+from rest_framework import generics, viewsets
+from rest_framework.permissions import BasePermission, IsAuthenticated, OperandHolder, SingleOperandHolder
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
@@ -49,7 +49,6 @@ class HabitViewSet(viewsets.ModelViewSet):
             self.permission_classes = [IsAuthenticated, IsOwnerOnly]
         return super().get_permissions()
 
-
     def perform_create(self, serializer: BaseSerializer[Any]) -> None:
         """Создает объект 'Habit' и автоматически назначает пользователя"""
 
@@ -84,7 +83,6 @@ class HabitViewSet(viewsets.ModelViewSet):
         self.perform_update(serializer)
 
         return Response(serializer.data)
-
 
 
 class PublicHabitListAPIView(generics.ListAPIView):

@@ -147,23 +147,18 @@ SIMPLE_JWT = {
 #     },
 # }
 
-CELERY_TASK_ANNOTATIONS = {
-    'habits.tasks.send_reminder': {
-        'default_retry_delay': 300,
-        'max_retries': 2
-    }
-}
+CELERY_TASK_ANNOTATIONS = {"habits.tasks.send_reminder": {"default_retry_delay": 300, "max_retries": 2}}
 
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CELERY_TASK_QUEUES = {
-    'celery': {
-        'exchange': 'celery',
-        'routing_key': 'celery',
+    "celery": {
+        "exchange": "celery",
+        "routing_key": "celery",
     },
 }
 
-CELERY_TASK_DEFAULT_QUEUE = 'celery'
+CELERY_TASK_DEFAULT_QUEUE = "celery"
 CELERY_TASK_CREATE_MISSING_QUEUES = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 

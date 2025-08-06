@@ -67,7 +67,7 @@ class UserTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.user.refresh_from_db()
 
-        if hasattr(view, 'get_serializer_class'):
+        if hasattr(view, "get_serializer_class"):
             serializer_class = view.get_serializer_class()
             self.assertEqual(serializer_class.__name__, "UserProfileSerializer")
             self.assertEqual(data.get("phone"), "79992222222")
@@ -76,11 +76,7 @@ class UserTestCase(APITestCase):
     def test_user_delete(self) -> None:
         """Тест удаления пользователя"""
 
-        superuser = User.objects.create(
-            email="newsuperuser@example.com",
-            is_superuser=True,
-            is_staff=True
-        )
+        superuser = User.objects.create(email="newsuperuser@example.com", is_superuser=True, is_staff=True)
         self.client.force_authenticate(user=superuser)
         user_to_delete = User.objects.create(email="todelete@example.com")
 
@@ -93,5 +89,3 @@ class UserTestCase(APITestCase):
             User.objects.get(pk=user_to_delete.pk)
 
         self.assertEqual(User.objects.all().count(), 2)
-
-
