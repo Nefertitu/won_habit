@@ -13,9 +13,9 @@ from config import settings
 def setup_habit_reminder(habit):
     """Устанавливает интервал напоминания"""
 
-    print(f"Setting up reminder for habit {habit.id}")
-    print(f"User: {habit.user}, TG Chat ID: {getattr(habit.user, 'tg_chat_id', None)}")
-    print(f"Time: {habit.time}, Frequency: {habit.frequency_days}")
+    print(f"Установлено напоминание для привычки: {habit.id}")
+    print(f"Пользователь: {habit.user}, TG Chat ID: {getattr(habit.user, 'tg_chat_id', None)}")
+    print(f"Время напоминания: {habit.time}, периодичность: {habit.frequency_days} дней в неделю")
     try:
         if not habit.time or not habit.frequency_days:
             print(f"Привычка {habit.id} не имеет времени или периодичности")
@@ -30,11 +30,11 @@ def setup_habit_reminder(habit):
 
         task_name = f"Habit Reminder {habit.id} - {habit.action[:50]}"
         now = timezone.localtime()
-        print(f"Now: {now}")
+        # print(f"Now: {now}")
         reminder_time_naive = datetime.combine(now.date(), habit.time)
-        print(f"Remainder_time_naive: {reminder_time_naive}")
+        # print(f"Remainder_time_naive: {reminder_time_naive}")
         reminder_time = timezone.make_aware(reminder_time_naive)
-        print(f"Reminder_time: {reminder_time}")
+        # print(f"Reminder_time: {reminder_time}")
 
         if reminder_time < now:
             reminder_time += timedelta(days=1)
@@ -50,7 +50,7 @@ def setup_habit_reminder(habit):
         task = PeriodicTask.objects.create(
             interval=schedule,
             name=task_name,
-            task="habits.tasks.send_reminder",
+            task=f"habits.tasks.send_reminder",
             args=json.dumps([habit.id]),
             start_time=reminder_time,
             description=f"Reminder for {habit.action}",
@@ -65,6 +65,7 @@ def setup_habit_reminder(habit):
 
 def send_telegram_message(chat_id, message):
     """"""
+
     print(f"Attempting to send Telegram message to chat {chat_id}")
     try:
         params = {

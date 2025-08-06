@@ -7,7 +7,7 @@ from users.models import User
 
 
 class HasOwner(Protocol):
-    owner: User
+    user: User
 
 
 class IsOwnerOnly(permissions.BasePermission):
@@ -15,4 +15,14 @@ class IsOwnerOnly(permissions.BasePermission):
 
     def has_object_permission(self, request: Request, view: Any, obj: HasOwner) -> bool:
         """Проверяет, является ли пользователь владельцем объекта"""
-        return obj.owner == request.user
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        if isinstance(obj, User):
+            return obj == request.user
+
+        if hasattr(obj, "user"):
+            return obj.user == request.user
+
+        return False

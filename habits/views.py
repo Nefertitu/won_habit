@@ -1,7 +1,7 @@
 from typing import Union, Sequence, Any
 
 from django.db.models import QuerySet
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated, BasePermission, OperandHolder, SingleOperandHolder
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -11,7 +11,7 @@ from habits.models import Habit
 from habits.paginators import HabitsPaginator
 from habits.serializers import HabitSerializer
 from habits.services import setup_habit_reminder
-from habits.tasks import send_information, send_reminder
+from habits.tasks import send_information
 from users.permissions import IsOwnerOnly
 
 
@@ -30,8 +30,7 @@ class HabitViewSet(viewsets.ModelViewSet):
 
         if not user.is_authenticated:
             return Habit.objects.none()
-        elif user.is_authenticated and user.has_perm(IsOwnerOnly):
-            return Habit.objects.filter(user=user)
+        return Habit.objects.filter(user=user)
 
     def get_permissions(self) -> Sequence[Any]:
         """
@@ -76,22 +75,13 @@ class HabitViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
 
         partial = kwargs.pop("partial", False)
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=partial,
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-
-        # now = timezone.localtime()
-        # four_hours_ago = now - timedelta(seconds=60)  # 14400 сек. = 4 часа
-        #
-        # if previous_update_time < four_hours_ago:
-        #     subscription = Subscription.objects.filter(course=instance, is_active=True)
-        #
-        #     for subs in subscription:
-        #         notify_subscriber.delay(subs.pk)
-        #         print(f"Задача отправки уведомления для подписки {subs.pk} запущена")
-        #
-        # if getattr(instance, "_prefetched_objects_cache", None):
-        #     instance._prefetched_objects_cache = {}
 
         return Response(serializer.data)
 

@@ -29,7 +29,7 @@ def send_information(email):
         message = f"Вы создали привычку: {latest_habit.pk} - {latest_habit.action}"
 
         if user.tg_chat_id:
-            print(f"Тег id: {user.tg_chat_id}")
+            print(f"Телеграм-чат id: {user.tg_chat_id}")
 
             send_telegram_message(user.tg_chat_id, message)
             print(f"Создана привычка: {latest_habit.action}, отправлено сообщение в Телеграм пользователю {latest_habit.user.tg_chat_id}")
@@ -43,7 +43,7 @@ def send_information(email):
                 )
                 print(f"Создана привычка: {latest_habit.action}, отправлено на почту сообщение пользователю {latest_habit.user.email}")
     except User.DoesNotExist:
-        print(f"Пользователь с email {email} не найден")
+        print(f"Пользователь с email '{email}' не найден")
     except Exception as e:
         print(f"Ошибка при отправке сообщения: {e}")
 
@@ -75,7 +75,7 @@ def send_reminder(self, habit_id=None):
             return "Нет привычек для напоминания"
 
         success_count_tg = 0
-        success_count_email = 0
+        # success_count_email = 0
 
         for habit in habits:
             print(f"Проверка пользователя {habit.user}:")
@@ -84,7 +84,6 @@ def send_reminder(self, habit_id=None):
             try:
                 habit_time = timezone.make_aware(
                     datetime.combine(now.date(), habit.time))
-
 
                 # Проверяем разницу во времени (в минутах)
                 time_diff = (habit_time - now).total_seconds() / 60
@@ -109,17 +108,17 @@ def send_reminder(self, habit_id=None):
                             f"Отправлено сообщение в Телеграм пользователю {habit.user.tg_chat_id}")
                         success_count_tg += 1
 
-                    if habit.user.email:
-                        send_mail(
-                            subject=f"Напоминание: {habit.action}",
-                            message=message,
-                            from_email=settings.DEFAULT_FROM_EMAIL,
-                            recipient_list=[habit.user.email],
-                            fail_silently=False
-                        )
-                        print(
-                            f"Отправлено напоминание о выполнении привычки: {habit.action}, на почту пользователя: {habit.user.email}")
-                        success_count_email += 1
+                    # if habit.user.email:
+                    #     send_mail(
+                    #         subject=f"Напоминание: {habit.action}",
+                    #         message=message,
+                    #         from_email=settings.DEFAULT_FROM_EMAIL,
+                    #         recipient_list=[habit.user.email],
+                    #         fail_silently=False
+                    #     )
+                    #     print(
+                    #         f"Отправлено напоминание о выполнении привычки: {habit.action}, на почту пользователя: {habit.user.email}")
+                    #     success_count_email += 1
                 else:
                     continue
 
@@ -129,12 +128,12 @@ def send_reminder(self, habit_id=None):
             finally:
                 cache.delete(lock_id)
 
-            print(f"Успешно отправлено {success_count_tg} напоминаний в телеграм, {success_count_email} напоминаний на email")
-            return f"Успешно отправлено {success_count_tg} напоминаний в телеграм, {success_count_email} напоминаний на email"
+            # print(f"Успешно отправлено {success_count_tg} напоминаний в телеграм, {success_count_email} напоминаний на email")
+            print(f"Успешно отправлено {success_count_tg} напоминаний в телеграм")
+            # return f"Успешно отправлено {success_count_tg} напоминаний в телеграм, {success_count_email} напоминаний на email"
+            return f"Успешно отправлено {success_count_tg} напоминаний в телеграм"
 
     except Exception as e:
         error_msg = f"Критическая ошибка: {str(e)}"
         print(error_msg)
         self.retry(exc=e, countdown=600)
-
-

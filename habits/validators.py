@@ -1,4 +1,5 @@
-from datetime import time
+from datetime import timedelta, time, datetime
+
 from typing import Any
 
 from rest_framework import serializers
@@ -8,28 +9,44 @@ from habits.models import Habit
 
 
 class FrequencyValidator:
-    """Класс-валидатор для проверки, что привычка будет выпоkняться не реже,
-    чем 1 раз в 7 дней"""
+    """Класс-валидатор для проверки поля 'frequency_days'"""
 
-    def __init__(self, field: str) -> None:
-        """Инициализирует валидатор с указанием имени поля для проверки"""
-        self.field = field
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Класс-валидатор работает с фиксированными полями"""
+        pass
 
-    def __call__(self, value: dict) -> None:
-        """Выполняет проверку поля с периодичностью"""
+    def __call__(self, data: dict) -> None:
+        """
+        Проверяет:
+        1. Обязательность поля для полезных привычек
+        2. Периодичность выполнения не может быть меньше 1 и больше 7 раз в неделю
+        """
 
-        search_field = value.get(self.field)
-        print(f"Получено значение {self.field}, {value}, {search_field}")
+        self.instance = getattr(self, "instance", None)
+        self.partial_update = getattr(self, "partial", True)
 
-        if search_field is None:
-            raise serializers.ValidationError(
-                "Поле 'frequency_days' обязательно для заполнения"
-            )
+        is_pleasant = data.get("is_pleasant", getattr(self.instance, "is_pleasant", False))
+        # frequency_days = data.get("frequency_days", getattr(self.instance, "frequency_days", False))
+        frequency_days = data.get("frequency_days")
 
-        if search_field and search_field > 7:
-            raise serializers.ValidationError("'frequency_days': Максимальная периодичность - 1 раз в 7 дней")
-        if search_field and search_field < 1:
-            raise serializers.ValidationError("'frequency_days': Минимальная периодичность - 1 раз в день")
+        if not is_pleasant:
+            if not self.instance and not self.partial_update:
+                if not frequency_days:
+                    raise serializers.ValidationError("'frequency_days': Для полезных привычек это обязательное поле!")
+                if "frequency_days" in data and data["frequency_days"] is None:
+                    raise serializers.ValidationError(
+                        "'frequency_days': Данное поле не может иметь значение null!"
+                    )
+
+            if self.partial_update:
+                if "frequency_days" in data and data["frequency_days"] is None:
+                    raise serializers.ValidationError(
+                        "'frequency_days': Данное поле не может иметь значение null!"
+                    )
+        if frequency_days is not None:
+            if frequency_days < 1 or frequency_days > 7:
+                raise ValidationError("Периодичность должна быть 1-7 дней")
+
 
 
 class RewardHabitValidator:
@@ -48,66 +65,121 @@ class RewardHabitValidator:
         reward = data.get("reward", getattr(self.instance, "reward", None))
         reward_habit = data.get("reward_habit", getattr(self.instance, "reward_habit", None))
 
-        if is_pleasant is None and self.instance:
-            is_pleasant = self.instance.is_pleasant
-        is_pleasant = is_pleasant or False
-
-        if reward_habit:
-            if not isinstance(reward_habit, Habit):
-                try:
-                    reward_habit = Habit.objects.get(pk=reward_habit)
-                except Habit.DoesNotExist:
-                    raise serializers.ValidationError("")
-                except ValueError:
-                    raise serializers.ValidationError({
-                        "reward_habit": ["Некорректный ID привычки"]
-                    })
-
-
-
-        data['reward_habit'] = reward_habit.pk
+        if reward_habit and not isinstance(reward_habit, Habit):
+            try:
+                reward_habit = Habit.objects.get(pk=reward_habit)
+            except ValueError:
+                raise serializers.ValidationError({
+                    "reward_habit": ["Некорректный ID привычки"]
+                })
 
         if is_pleasant:
-            if reward_habit and reward:
-                raise serializers.ValidationError({
-                    "reward_habit": "Приятная привычка не может иметь связанную привычку!",
-                    "reward": "Приятная привычка не может иметь вознаграждение!"
-                })
             if reward_habit:
                 raise serializers.ValidationError("'reward_habit': Приятная привычка не может иметь связанную привычку!")
-            if self.instance and self.instance.reward_habit and reward_habit is None:
-                raise serializers.ValidationError("Приятная привычка не должная содержать связанную привычку!")
 
             if reward:
                 raise serializers.ValidationError("'reward': Приятная привычка не может иметь вознаграждение!")
-            if self.instance and self.instance.reward_habit and reward_habit is None:
-                raise serializers.ValidationError("Приятная привычка не должная содержать вознаграждение!")
 
         else:
-            if not reward_habit.is_pleasant:
-                raise serializers.ValidationError({
-                    "reward_habit": ["В качестве связанной привычки можно указывать только приятную!"]
-                })
-            if reward and reward_habit:
-                raise serializers.ValidationError("'reward', 'reward_habit': Выберите что-то одно: приятную привычку или вознаграждение")
+            if reward_habit is not None:
+                if not reward_habit.is_pleasant:
+                    raise serializers.ValidationError({
+                        "reward_habit": ["В качестве связанной привычки можно указывать только приятную!"]
+                    })
+                if reward and reward_habit:
+                    raise serializers.ValidationError(
+                        "'reward', 'reward_habit': Выберите что-то одно: приятную привычку или вознаграждение")
 
 
 class LeadTimeValidator:
     """Валидация для поля 'lead_time'"""
 
-    def __init__(self, field: str) -> None:
-        """Инициализирует валидатор с указанием имени поля для проверки"""
-        self.field = field
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Класс-валидатор работает с фиксированными полями"""
+        pass
 
-    def __call__(self, value: dict) -> None:
-        """Проверяет, что время на выполнение привычки не превышает 2 минуты'"""
+    def __call__(self, data: dict) -> None:
+        """
+        Проверяет:
+        1. Обязательность поля для полезных привычек
+        2. Максимальное время выполнения (2 минуты)
+        """
 
-        lead_time = dict(value).get(self.field)
+        self.instance = getattr(self, "instance", None)
+        self.partial_update = getattr(self, "partial", True)
 
-        if lead_time is None:
-            return
+        is_pleasant = data.get("is_pleasant", getattr(self.instance, "is_pleasant", False))
+        # lead_time = data.get("lead_time", getattr(self.instance, "lead_time", None))
+        lead_time = data.get("lead_time")
 
-        if lead_time and lead_time > time(hour=0, minute=2):
-            raise ValidationError(
-                "'lead_time': Время выполнения не должно превышать 2 минуты!"
-            )
+        if not is_pleasant:
+            if not self.instance and not self.partial_update:
+                if not lead_time:
+                    raise serializers.ValidationError("'lead_time': Для полезных привычек это обязательное поле!")
+
+                if "lead_time" not in data and not self.instance and not self.partial_update:
+                        raise serializers.ValidationError(
+                            "'lead_time': Для полезной привычки это поле обязательно для заполнения!"
+                        )
+
+            # if not self.partial_update and "lead_time" not in data:
+            #     raise serializers.ValidationError(
+            #         "'lead_time': Для полезной привычки это поле обязательно для заполнения!"
+            #     )
+            if self.instance and self.partial_update:
+                if "lead_time" in data and data["lead_time"] is None:
+                    raise serializers.ValidationError(
+                        "'lead_time': Данное поле не может иметь значение null!"
+                    )
+                # if not lead_time:
+                #     raise serializers.ValidationError("'lead_time': Для полезных привычек это обязательное поле!")
+
+        if "lead_time" in data and data["lead_time"] is not None:
+                if lead_time <= timedelta(minutes=0):
+                    raise ValidationError(
+                    "'lead_time': Время выполнения не должно быть нулевое или отрицательное!"
+                )
+                if lead_time > timedelta(minutes=2):
+                    raise ValidationError(
+                    "'lead_time': Время выполнения не должно превышать 2 минуты!"
+                )
+
+
+class RequiredFieldTimeValidator:
+    """Валидация обязательного для полезной привычки поля 'time'"""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Класс-валидатор работает с фиксированными полями"""
+        pass
+
+    def __call__(self, data: dict) -> None:
+        """Выполняет проверку поля 'time'"""
+
+        self.instance = getattr(self, "instance", None)
+        self.partial_update = getattr(self, "partial", True)
+        # time_value = data.get("time", getattr(self.instance, "time", None))
+        time_value = data.get("time")
+
+        is_pleasant = data.get("is_pleasant", getattr(self.instance, "is_pleasant", False))
+
+        if not is_pleasant:
+            if not self.instance and not self.partial_update:
+                if not time_value:
+                    raise serializers.ValidationError("'time': Для полезных привычек это обязательное поле!")
+                if "time" in data and data["time"] is None:
+                    raise serializers.ValidationError(
+                        "'time': Данное поле не может иметь значение null!"
+                    )
+            if self.instance and self.partial_update:
+                if "lead_time" in data and data["lead_time"] is None:
+                    raise serializers.ValidationError(
+                        "'lead_time': Данное поле не может иметь значение null!"
+                    )
+
+            # if time_value and time_value != datetime.strptime(time_value, "%H:%M:%S").time():
+            #     raise serializers.ValidationError(
+            #         "'time': Введите время выполнения в формате ЧЧ:ММ:СС или секундах (максимум 2 минуты)!"
+            #     )
+
+
+

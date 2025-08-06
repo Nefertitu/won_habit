@@ -34,16 +34,21 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self) -> type[serializers.BaseSerializer]:
         """Динамический выбор сериализатора"""
 
+        print(f"Action: {self.action}")  # Добавьте это
+        print(f"User: {self.request.user}")  # И это
+        print(f"Is superuser: {self.request.user.is_superuser}")
+
         if self.action == "list":
-            if not (self.request.user.is_staff):
+            if not self.request.user.is_superuser:
                 return PublicUserSerializer
 
-        elif self.action == "retrieve":
+        if self.action == "retrieve":
             object = self.get_object()
-            if not (self.request.user.is_staff or self.request.user == object.email):
-                return PublicUserSerializer
+            print(f"Request user: {self.request.user.email}, Object user: {object.email}")
+            if self.request.user.is_superuser or self.request.user.email == object.email:
+                return UserProfileSerializer
 
-        return UserProfileSerializer
+        return PublicUserSerializer
 
     def get_permissions(self) -> List[permissions.BasePermission]:
         """
