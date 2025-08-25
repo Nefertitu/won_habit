@@ -44,7 +44,7 @@ jobs:
            key: poetry-${{ hashFiles('pyproject.toml') }}
 
        - name: Install dependencies
-         run: poetry install
+         run: poetry install --no-root
 
        - name: Create static directory
          run: mkdir -p static
