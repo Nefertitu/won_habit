@@ -97,7 +97,7 @@ jobs:
         key: poetry-${{ hashFiles('pyproject.toml') }}
 
     - name: Install dependencies
-      run: poetry install --no-interaction --no-ansi
+      run: poetry install --no-interaction --no-ansi --no-root
 
     - name: Wait to PostgreSQL to be ready
       run: |
