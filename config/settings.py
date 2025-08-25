@@ -35,7 +35,6 @@ if DEBUG:
     }
 
 
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -206,4 +205,3 @@ CORS_ALLOW_ALL_ORIGINS = True
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 TELEGRAM_URL = "https://api.telegram.org/bot"
-
