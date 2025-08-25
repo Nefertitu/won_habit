@@ -201,3 +201,5 @@ curl http://your-server-ip/api/courses/
 docker-compose exec web python manage.py csu
 ```
 * Откройте в браузере: http://your-server-ip/admin/
+
+## Приложение развернуто на VM на server-ip: http://89.169.166.189/

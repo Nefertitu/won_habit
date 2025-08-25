@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 ENV POETRY_HOME=/opt/poetry
 ENV POETRY_VERSION=1.8.2
 ENV PATH="$POETRY_HOME/bin:$PATH"
-RUN curl -sSL https://install.python-poetry.org | python - --version $POETRY_VERSION
+RUN curl -sSL https://install.python-poetry.org | python3 - --version $POETRY_VERSION
 
 WORKDIR /app
 
