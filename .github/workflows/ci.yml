@@ -18,7 +18,7 @@ jobs:
            echo "${{ secrets.SSH_KEY }}" > private_key
            chmod 600 private_key
            
-           rsync -avz --delete \
+           rsync -avz --rsync-path="sudo rsync" --delete \
              -e "ssh -i private_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
              ./ \
              ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/opt/won_habit/
