@@ -228,6 +228,8 @@ jobs:
           echo 'SECRET_KEY=${{ secrets.POSTGRES_SUPERUSER_PASSWORD }}' >> .env
           echo "POSTGRES_HOST=db" >> /opt/won_habit/.env
           echo "POSTGRES_PORT=5432" >> /opt/won_habit/.env
+          echo "CELERY_BROKER_URL=redis://redis:6379/1" >> /opt/won_habit/.env
+          echo "CELERY_RESULT_BACKEND=redis://redis:6379/1" >> /opt/won_habit/.env
           DEBUG=False
           echo 'ALLOWED_HOSTS=localhost,127.0.0.1,${{ secrets.SERVER_IP }}' >> .env
           docker compose down
