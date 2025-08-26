@@ -35,8 +35,8 @@ services:
       - "80:80"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
+      - /opt/won_habit/staticfiles:/app/staticfiles
+      - /opt/won_habit/media:/app/media
     depends_on:
       - web
     restart: unless-stopped
