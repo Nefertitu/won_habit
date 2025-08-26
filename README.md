@@ -206,6 +206,26 @@ docker-compose ps
 ```
 docker-compose logs web
 ```
+
+- Проверка статистических файлов
+* Посмотрите что в папке staticfiles
+```
+docker compose exec web ls -la /app/staticfiles/
+```
+* Проверьте доступность через браузер
+```
+curl -I http://your-server-ip/static/admin/css/base.css
+```
+7. Доступ к админке:
+
+* Для первого входа выполните команду для создания суперпользователя:
+```
+docker-compose exec web python manage.py csu
+```
+* Откройте в браузере: http://your-server-ip/admin/
+
+8. Проверка эндпоинтов:
+
 - Проверка корневого URL
 ```
 curl http://your-server-ip/
@@ -234,21 +254,5 @@ curl -X POST http://89.169.166.189/register/ \
 curl http://89.169.166.189/users/ \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
-- Проверка статистических файлов
-* Посмотрите что в папке staticfiles
-```
-docker compose exec web ls -la /app/staticfiles/
-```
-* Проверьте доступность через браузер
-```
-curl -I http://your-server-ip/static/admin/css/base.css
-```
-7. Доступ к админке:
-
-* Для первого входа выполните команду для создания суперпользователя:
-```
-docker-compose exec web python manage.py csu
-```
-* Откройте в браузере: http://your-server-ip/admin/
 
 ## Приложение развернуто на VM на server-ip: http://89.169.166.189/
