@@ -233,19 +233,19 @@ curl http://your-server-ip/
 - JWT аутентификация
 * Получение JWT токена
 ```
-curl -X POST http://89.169.166.189/login/ \
+curl -X POST http://89.169.166.189/users/login/ \
   -H "Content-Type: application/json" \
   -d '{"email":"superuser@example.com","password":"123qwer"}'
 ```
 * Обновление токена  
 ```
-curl -X POST http://89.169.166.189/token/refresh/ \
+curl -X POST http://89.169.166.189/users/token/refresh/ \
   -H "Content-Type: application/json" \
   -d '{"refresh":"your_refresh_token"}'
 ```
 - Регистрация
 ```
-curl -X POST http://89.169.166.189/register/ \
+curl -X POST http://89.169.166.189/users/register/ \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"testpassword","password2":"testpassword"}'
 ```
