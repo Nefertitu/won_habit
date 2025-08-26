@@ -154,15 +154,15 @@ if CACHE_ENABLED:
         }
     }
 
-if 'test' in sys.argv:
+if "test" in sys.argv:
     CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
         }
     }
-    CELERY_BROKER_URL = 'memory://'
-    CELERY_RESULT_BACKEND = 'cache+memory://'
-    TELEGRAM_BOT_TOKEN = 'test-token'
+    CELERY_BROKER_URL = "memory://"
+    CELERY_RESULT_BACKEND = "cache+memory://"
+    TELEGRAM_BOT_TOKEN = "test-token"
 else:
     CELERY_BROKER_URL = os.getenv("LOCATION")
     CELERY_RESULT_BACKEND = os.getenv("LOCATION")
