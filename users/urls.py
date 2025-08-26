@@ -14,7 +14,7 @@ app_name = UsersConfig.name
 
 
 router = DefaultRouter()
-router.register(r"users", UserProfileViewSet, basename="user")
+router.register(r"", UserProfileViewSet, basename="user")
 
 urlpatterns = [
     path("register/", UserCreateApiView.as_view(), name="register"),
