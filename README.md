@@ -206,9 +206,42 @@ docker-compose ps
 ```
 docker-compose logs web
 ```
-- Проверьте API
+- Проверка корневого URL
 ```
-curl http://your-server-ip/api/courses/
+curl http://your-server-ip/
+```
+- JWT аутентификация
+* Получение JWT токена
+```
+curl -X POST http://89.169.166.189/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"email":"superuser@example.com","password":"123qwer"}'
+```
+* Обновление токена  
+```
+curl -X POST http://89.169.166.189/token/refresh/ \
+  -H "Content-Type: application/json" \
+  -d '{"refresh":"your_refresh_token"}'
+```
+- Регистрация
+```
+curl -X POST http://89.169.166.189/register/ \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"testpassword","password2":"testpassword"}'
+```
+- Просмотр пользователей:
+```
+curl http://89.169.166.189/users/ \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+- Проверка статистических файлов
+* Посмотрите что в папке staticfiles
+```
+docker compose exec web ls -la /app/staticfiles/
+```
+* Проверьте доступность через браузер
+```
+curl -I http://your-server-ip/static/admin/css/base.css
 ```
 7. Доступ к админке:
 
