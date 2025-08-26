@@ -1,6 +1,8 @@
 FROM nginx:latest
 
-RUN mkdir -p /app/static
+RUN mkdir -p /app/staticfiles && \
+    chown -R appuser:appuser /app/staticfiles && \
+    chmod -R 755 /app/staticfiles
 
 RUN mkdir -p /app/media
 
