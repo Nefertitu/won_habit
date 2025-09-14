@@ -11,7 +11,7 @@ app_name = HabitsConfig.name
 
 
 router = DefaultRouter()
-router.register(r"habits", HabitViewSet, basename="habits")
+router.register(r"", HabitViewSet, basename="habits")
 
 urlpatterns = [
     path("public_habit/", PublicHabitListAPIView.as_view(), name="public-habit-list"),

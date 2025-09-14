@@ -14,10 +14,9 @@ app_name = UsersConfig.name
 
 
 router = DefaultRouter()
-router.register(r"users", UserProfileViewSet, basename="user")
+router.register(r"", UserProfileViewSet, basename="user")
 
 urlpatterns = [
-    path("", include(router.urls)),
     path("register/", UserCreateApiView.as_view(), name="register"),
     path("login/", TokenObtainPairView.as_view(permission_classes=(AllowAny,)), name="login"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
