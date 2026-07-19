@@ -88,7 +88,9 @@ class Habit(models.Model):
         """Строковое отображение модели Привычка"""
         if self.is_pleasant:
             return f"Приятная привычка: {self.action}"
-        return f"Полезная привычка: {self.action}, время выполнения: {self.time}, периодичность: {self.frequency_days} дней в неделю"
+        return (f"Полезная привычка: {self.action}, "
+                f"время выполнения: {self.time}, "
+                f"периодичность: {self.frequency_days} дней в неделю")
 
     class Meta:
         verbose_name = "Привычка"

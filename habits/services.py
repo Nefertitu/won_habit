@@ -61,7 +61,7 @@ def setup_habit_reminder(habit):
 
 
 def send_telegram_message(chat_id, message):
-    """"""
+    """Отправка сообщение в Телеграм"""
 
     print(f"Attempting to send Telegram message to chat {chat_id}")
     try:
